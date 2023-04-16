@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import { getAuth, createUserWithEmailAndPassword, sendEmailVerification, updateProfile } from "firebase/auth";
 import app from '../../Components/firebase/FireBase.config';
 import { Link } from 'react-router-dom';
 
@@ -25,7 +25,8 @@ const Resister = () => {
         setError('')
         const email = event.target.email.value
         const pass = event.target.password.value
-        console.log( email, pass);
+        const name =event.target.name.value
+        console.log(name, email, pass);
 
         // validation
         if(!/(?=.*[A-Z])/.test(pass)){
@@ -46,6 +47,8 @@ const Resister = () => {
             event.target.reset();
             setError('')
             setSuccess('you have been created successfully')
+            sendVerificationEmail(result.user)
+            updateUserData(result.user, name)
         })
         .catch (error =>{
             console.log(error.message);
@@ -53,13 +56,37 @@ const Resister = () => {
       
         })
     }
+
+    const sendVerificationEmail = user =>{
+        sendEmailVerification(user)
+        .then(result =>{
+            console.log(result);
+            alert('please verify email')
+        })
+    }
+     const updateUserData = ( user,name )=>{
+        updateProfile(user,{
+            displayName: name
+        })
+        .then(()=>{
+            console.log("user name updated");
+        })
+        .catch(error =>{
+            setError(error.message)
+        })
+     }
     return (
         <div>
             <h2>this is register</h2>
             <form  onSubmit={handleSubmit}>
 
+            <input className='w-50 mb-4 rounded ps-2'  type="name"  name='name' id='name' placeholder='your name' required />
+                <br />
+
                 <input className='w-50 mb-4 rounded ps-2' onChange={handleEmailChange} type="email"  name='email' id='email' placeholder='your email' required />
                 <br />
+                
+            
                 <input className='w-50 mb-4 rounded ps-2' onBlur={handlePassblur} type="password" name='password' id='password' placeholder='your password' required />
                 <br />
                 <input className='btn btn-primary' type="submit" value="register" />
